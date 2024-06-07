@@ -15,16 +15,6 @@ def stream_data(text, delay = 0.02):
 st.title("Sales Insights Generator")
 
 
-# Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state["messages"] = []
-
-# Display chat messages upon rerun
-for message in st.session_state["messages"]:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-
 
 # Prompt and File Inputs
 prompt_text = st.chat_input("Ask any question regarding your data")
@@ -38,8 +28,6 @@ if uploaded_file is not None and prompt_text:
     data = pd.read_csv(uploaded_file)
     data = data.to_json(orient='records')
 
-    # Add latest message to history
-    st.session_state["messages"].append({"role": "user", "content": prompt_text})
 
     # Create a prompt container for user
     with st.chat_message("user"):
@@ -49,7 +37,6 @@ if uploaded_file is not None and prompt_text:
     # Behind the scenes processing
 
     # Create a prompt container for assistant (AI)
-    with st.chat_message("assistant"):
         with st.spinner("Thinking hard..."):
 
             # Content that will be sent to ollama
@@ -57,13 +44,12 @@ if uploaded_file is not None and prompt_text:
 
             # Result being provided by model based on content recieved
             result = ollama.chat(model = "llama3", messages = [{
-                "role": "assistant",
+                "role": "user",
                 "content": content
             }])
 
             # Content of model response and final output
             response = result["message"]["content"]
-            st.session_state["messages"].append({"role": "assistant", "content": response})
             st.write_stream(stream_data(response))
 
 else:
