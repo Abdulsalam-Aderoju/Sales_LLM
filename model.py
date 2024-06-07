@@ -4,7 +4,7 @@ import pandas as pd
 import time
 
 def stream_data(text, delay=0.02):
-    for word in text.split():
+    for word in text.split(" "):
         yield word + " "
         time.sleep(delay)
 
@@ -41,27 +41,24 @@ if uploaded_file is not None and prompt_text:
 
             # Behind the scenes processing
             # Create a prompt container for assistant (AI)
-            with st.chat_message("assistant"):
-                with st.spinner("Thinking hard..."):
-                    try:
-                        # Content that will be sent to ollama
-                        content = f"Data: {data}\nPrompt: {prompt_text}"
 
-                        # Result being provided by model based on content received
-                        result = ollama.chat(model="llama3", messages=[{
-                            "role": "assistant",
-                            "content": content
-                        }])
+            with st.spinner("Thinking hard..."):
+                try:
+                    # Content that will be sent to ollama
+                    content = f"Data: {data}\nPrompt: {prompt_text}"
 
-                        # Ensure response has the expected structure
-                        if "message" in result and "content" in result["message"]:
-                            response = result["message"]["content"]
-                            st.write(response)
-                        else:
-                            st.error("Unexpected response structure from the model.")
+                    # Result being provided by model based on content received
+                    result = ollama.chat(model="llama3", messages=[{
+                        "role": "user",
+                        "content": content
+                    }])
 
-                    except Exception as e:
-                        st.error(f"Error processing the request: {e}")
+                    # Ensure response has the expected structure   
+                    response = content["content"]["message"]                
+                    st.write(stream_data(response))
+
+                except Exception as e:
+                    st.error(f"Error processing the request: {e}")
     except Exception as e:
         st.error(f"An unexpected error occurred: {e}")
 
