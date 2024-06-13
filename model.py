@@ -4,7 +4,7 @@ import pandas as pd
 import time
 
 def stream_data(text, delay=0.02):
-    for word in text.split(" "):
+    for word in text.split():
         yield word + " "
         time.sleep(delay)
 
@@ -53,9 +53,12 @@ if uploaded_file is not None and prompt_text:
                         "content": content
                     }])
 
-                    # Ensure response has the expected structure   
-                    response = content["content"]["message"]                
-                    st.write(stream_data(response))
+                    # Ensure response has the expected structure
+                    if "message" in result and "content" in result["message"]:
+                        response = result["message"]["content"]
+                        st.write(stream_data(response))
+                    else:
+                        st.error("Unexpected response structure from the model.")
 
                 except Exception as e:
                     st.error(f"Error processing the request: {e}")
